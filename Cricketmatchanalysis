@@ -1,0 +1,93 @@
+import pandas as pd
+x = pd.read_csv(r"C:\Users\hopeb\OneDrive\Desktop\Data science\Testmatchesdata.csv")
+#pd.set_option('display.max_rows')
+pd.set_option('display.max_columns',15)
+pd.set_option('display.width',139)
+#print (x)
+
+#rename columns
+x = x.rename (columns = {"Mat":"Matches","NO":"Not_outs","HS":"Highest_inns_score","Ave":"Batting_average","BF":"Balls_faced","SR":"Batting_strike_rate"})
+#print(x)
+
+#check for null values
+#print(x.isnull().any())
+#print(x[x['Balls_faced'].isna()==1])
+
+#fixing the null values
+x['Balls_faced'] = x['Balls_faced'].fillna(0)
+x['Batting_strike_rate'] = x['Batting_strike_rate'].fillna(0)
+#print(x[x['Player']=='Hon.FS Jackson (ENG)'])
+
+#removing duplicates
+#print(x.duplicated())
+#print(x[x['Player'].duplicated()==1])
+#to find where the columns are duplicated from
+#print(x[x['Player'].isin(['GA Headey (lWI)','GS Sobers (WI)','JB Hobbs (ENG)',' V Kohli (IND)'])])
+#print(x.drop_duplicates())
+
+#Dropping duplicates
+x = x.drop_duplicates()
+#print(x[x['Player'].isin(['GA Headey (lWI)','GS Sobers (WI)','JB Hobbs (ENG)',' V Kohli (IND)'])])
+
+#split up span into start and end date and add the columns onto the table
+#print(x['Span'].str.split(pat = '-'))
+x['Rookie_year'] = x['Span'].str.split( pat = '-').str[0]
+x['final_year'] = x['Span'].str.split( pat = '-').str[1]
+#print(x)
+#Get rid of the span column
+x = x.drop(['Span'], axis = 1)
+#print(x)
+
+#split country from player
+#print(x['Player'].str.split(pat = '('))
+x['Country'] = x['Player'].str.split(pat = '(').str[1]
+x['Country'] = x['Country'].str.split(pat = ')').str[0]
+#print(x['Country'])
+#removing country codes from player
+x['Player']= x['Player'].str.split(pat = '(').str[0]
+#print(x)
+
+#check datatypes
+#print(x.dtypes)
+#fix datatypes
+#print(x['Highest_inns_score'].str.split(pat = '*'))
+#print(x['Highest_inns_score'].str.split(pat = '*').str[0])
+x['Highest_inns_score'] = x['Highest_inns_score'].str.split(pat = '*').str[0]
+#print(x['Highest_inns_score'].astype('int'))
+x['Highest_inns_score'] = x['Highest_inns_score'].astype('int')
+#print(x.dtypes)
+#print(x['Rookie_year'].str.split(pat = '-').str[0])
+#print(x['final_year'].str.split(pat = '-').str[0])
+x['Rookie_year'] = x['Rookie_year'].str.split(pat = '-').str[0]
+x['final_year'] = x['final_year'].str.split(pat = '-').str[0]
+x['Rookie_year'] = x['Rookie_year'].astype('int')
+x['final_year'] = x['final_year'].astype('int')
+#OR
+x = x.astype({'Rookie_year':'int', 'final_year':'int'})
+x = x.drop(61, axis = 0)
+#print(x)
+#print(x.isnull().any())
+x['Balls_faced'] = x['Balls_faced'].str.split(pat = '+').str[0]
+x['Balls_faced'] = x['Balls_faced'].astype('int')
+#print(x.dtypes)
+
+#find career length
+x['career_length'] = x['final_year'] - x['Rookie_year']
+#print(x)
+
+# Question 1:average career length
+#print(x['career_length'].mean())
+
+#Question 2: average batting strike rate for cricketers who played over 10 years
+#print(x[x['career_length'] > 10 ]['Batting_strike_rate'].mean())
+
+#Question 3: find number of cricketers who played before 1960
+#print(x[x['Rookie_year'] < 1960]['Player'].count())
+
+#Question 4 :max highest inns score by country
+#print(x.groupby('Country')['Highest_inns_score'].max())
+#To sort the data out
+#print(x.groupby('Country')['Highest_inns_score'].max().to_frame('Highinncountry').reset_index().sort_values('Highinncountry', ascending = False))
+
+#Question 5 : hundreds, fifties, ducks(0) average by country
+print(x.groupby('Country')[['100', '50','0']].mean())
